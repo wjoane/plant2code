@@ -1,0 +1,39 @@
+version: '3'
+services:
+  php-plant2code:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: plant2code/php
+    container_name: php-plant2code
+    working_dir: /var/www/plant2code
+    volumes:
+      - .:/var/www/plant2code
+      - ./repo/php/php.ini:/usr/local/etc/php/php.ini
+      - ./repo/php/docker-php-ext-xdebug.ini:/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+    networks:
+      app-network:
+        ipv4_address: 172.18.0.10
+    command: sh -c "composer install && php-fpm"
+  
+  nginx-plant2code:
+    image: nginx:1.19.6-alpine
+    container_name: nginx-plant2code
+    ports:
+      - 8088:80
+    volumes:
+      - .:/var/www/plant2code
+      - ./repo/nginx/conf.d:/etc/nginx/conf.d
+    networks:
+      app-network:
+        ipv4_address: 172.18.0.20
+
+#Docker Networks
+networks:
+  app-network:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.18.0.0/16
+
